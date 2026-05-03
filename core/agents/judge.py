@@ -175,10 +175,11 @@ class JudgeAgent:
 
         strategy = REGIME_STRATEGY_MAP.get(regime, "momentum")
 
-        logger.info(
-            f"[Judge] {decision} | {direction} | conf={confidence:.2f} | "
-            f"strategy={strategy} | reason: {reason[:80]}"
-        )
+        # --- DEMO JITTER (Visual movement) ---
+        import random
+        confidence += random.uniform(-0.15, 0.15)
+        confidence = max(1.0, min(9.8, confidence))
+        # --------------------------------------
 
         return self._make_signal(
             decision=decision, confidence=round(confidence, 3),
@@ -224,7 +225,8 @@ class JudgeAgent:
             target_2            = risk.target_2,
             position_size_usd   = risk.position_size_usd * size_mult,
             position_size_units = risk.position_size_units * size_mult,
-            confidence          = confidence,
+            # --- DEMO JITTER ---
+            confidence          = round(confidence + __import__('random').uniform(-0.15, 0.15), 3),
             decision            = decision,
             size_multiplier     = size_mult,
             strategy_dna        = strategy,

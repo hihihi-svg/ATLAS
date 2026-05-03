@@ -444,7 +444,7 @@ function updateDashboard(s, signals) {
     const dirLabel = lastSig.direction==='LONG'?'BUY':lastSig.direction==='SHORT'?'SELL':'WAIT';
     // Show sub-scores (T:Tech, A:Analyst, R:RL, K:Risk)
     const sub = `T:${lastSig.tech||0} A:${lastSig.analyst||0} R:${lastSig.rl||0} K:${lastSig.risk||0}`;
-    document.getElementById('lastConfSub').textContent = `${dirLabel} · ${sub}`;
+    document.getElementById('lastConfSub').textContent = `${dirLabel} (${lastSig.regime||'?'}) · ${sub}`;
   }
 
   // VIX / Size card
