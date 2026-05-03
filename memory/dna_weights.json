@@ -1,0 +1,6 @@
+{
+  "momentum": 1.0,
+  "mean_reversion": 1.0,
+  "sentiment": 1.0,
+  "breakout": 1.0
+}

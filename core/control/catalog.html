@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLAS | User Catalog</title>
+<style>
+  :root {
+    --bg: #0B0E14;
+    --surface: #151A23;
+    --surface2: #1F2532;
+    --border: #2A3142;
+    --text: #F3F4F6;
+    --muted: #9CA3AF;
+    --accent: #7C6CFC;
+    --green: #00D4AA;
+    --yellow: #FBBF24;
+    --red: #FF6B6B;
+  }
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, sans-serif;
+    margin: 0;
+    padding: 0;
+    line-height: 1.6;
+  }
+  .header {
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .container {
+    max-width: 900px;
+    margin: 40px auto;
+    padding: 0 24px 40px 24px;
+  }
+  h1 { font-size: 28px; margin-bottom: 8px; color: white; }
+  h2 { color: var(--accent); border-bottom: 1px solid var(--border); padding-bottom: 8px; margin-top: 40px; }
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+    gap: 20px;
+    margin-top: 24px;
+  }
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px;
+  }
+  .card h3 { margin: 0 0 12px 0; color: white; display: flex; align-items: center; gap: 8px; }
+  .card p { color: var(--muted); font-size: 14px; margin: 0 0 16px 0; }
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: rgba(124,108,252,0.15);
+    color: var(--accent);
+    border: 1px solid rgba(124,108,252,0.3);
+    border-radius: 8px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .agent-list { list-style: none; padding: 0; margin: 0; }
+  .agent-list li { margin-bottom: 12px; padding-left: 24px; position: relative; }
+  .agent-list li::before { content: "🔹"; position: absolute; left: 0; top: 2px; font-size: 12px; }
+  .agent-list b { color: var(--text); }
+  
+  .regime-box { padding: 16px; border-radius: 8px; margin-bottom: 12px; border: 1px solid var(--border); }
+  .r-bull { background: rgba(0,212,170,0.1); border-color: rgba(0,212,170,0.3); }
+  .r-bear { background: rgba(255,107,107,0.1); border-color: rgba(255,107,107,0.3); }
+  .r-chop { background: rgba(251,191,36,0.1); border-color: rgba(251,191,36,0.3); }
+</style>
+</head>
+<body>
+  <div class="header">
+    <div class="header-left">
+      <div style="font-size:24px">⚡</div>
+      <div>
+        <div style="font-weight:700;letter-spacing:1px">ATLAS</div>
+        <div style="font-size:11px;color:var(--muted)">Advisory System Catalog</div>
+      </div>
+    </div>
+    <div><a href="/" class="btn">← Back to Dashboard</a></div>
+  </div>
+  
+  <div class="container">
+    <h1>📖 How to Read the Dashboard</h1>
+    <p style="color:var(--muted);font-size:16px;">This catalog explains in plain English how the AI makes decisions and what the dashboard means.</p>
+
+    <h2>🧠 The 5 AI "Brain" Agents</h2>
+    <p style="color:var(--muted)">Every 30 seconds, 5 different "experts" vote on whether to buy, sell, or wait. Their votes are combined into the final <b>Confidence Score (0-10)</b>.</p>
+    
+    <div class="grid">
+      <div class="card">
+        <h3>📈 The Technician (40% weight)</h3>
+        <p>Looks at charts, price history, and indicators like RSI and MACD. It's the most trusted agent because it only cares about mathematical price action.</p>
+      </div>
+      <div class="card">
+        <h3>📰 The Analyst (25% weight)</h3>
+        <p>Reads news headlines to see if the market is happy (Bullish) or scared (Bearish). If there's no news, it looks at price momentum.</p>
+      </div>
+      <div class="card">
+        <h3>🤖 The RL Bot (20% weight)</h3>
+        <p>A machine-learning bot trained on thousands of past trades. It looks for hidden patterns humans might miss.</p>
+      </div>
+      <div class="card">
+        <h3>🛡️ The Risk Manager (15% weight)</h3>
+        <p>Calculates exactly how much money is safe to risk on a trade. If a trade is too dangerous, this agent rejects it completely.</p>
+      </div>
+      <div class="card">
+        <h3>🤨 The Contrarian (Veto Power)</h3>
+        <p>The "Devil's Advocate". Its only job is to find reasons why a trade is a BAD idea. If it finds a fatal flaw, it subtracts points from the total score.</p>
+      </div>
+    </div>
+
+    <h2>🌦️ Market Regimes (The "Weather")</h2>
+    <p style="color:var(--muted)">The AI changes how it trades based on the current market "weather".</p>
+    
+    <div class="regime-box r-bull">
+      <h3 style="margin:0 0 4px 0;color:var(--green)">🟢 BULL (Uptrend)</h3>
+      <p style="margin:0;font-size:14px;color:var(--muted)">Prices are climbing. The AI will look for opportunities to <b>BUY</b> (Long). Confidence scores will be highest here.</p>
+    </div>
+    
+    <div class="regime-box r-bear">
+      <h3 style="margin:0 0 4px 0;color:var(--red)">🔴 BEAR (Downtrend)</h3>
+      <p style="margin:0;font-size:14px;color:var(--muted)">Prices are falling. The AI will look for opportunities to <b>SELL</b> (Short).</p>
+    </div>
+    
+    <div class="regime-box r-chop">
+      <h3 style="margin:0 0 4px 0;color:var(--yellow)">🟡 CHOP (Sideways)</h3>
+      <p style="margin:0;font-size:14px;color:var(--muted)">Prices are bouncing up and down with no clear direction. The AI gets bored and will mostly say <b>WAIT</b> (Skip) because trades are too risky. Confidence will hover around 4.5 - 5.0.</p>
+    </div>
+
+    <h2>🚦 What the Recommendations Mean</h2>
+    <div class="card" style="margin-top:16px;">
+      <ul class="agent-list">
+        <li><b>EXECUTE / BUY (Confidence > 5.5)</b>: The AI found a strong setup. It recommends taking a position.</li>
+        <li><b>BORDERLINE (Confidence 5.0 - 5.4)</b>: The AI sees a setup, but it's weak. If you trade, use half your normal money.</li>
+        <li><b>SKIP / WAIT (Confidence < 5.0)</b>: The market is messy or dangerous. Save your money and do nothing.</li>
+      </ul>
+    </div>
+    
+    <div style="margin-top:60px;text-align:center;color:var(--border);font-size:12px;">
+      ATLAS ADVISORY SYSTEM V1.0
+    </div>
+  </div>
+</body>
+</html>

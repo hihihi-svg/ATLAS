@@ -1,0 +1,84 @@
+{
+  "date": "2026-05-03",
+  "trades": [
+    {
+      "status": "OPENED",
+      "mode": "PAPER",
+      "symbol": "ETH/USD",
+      "direction": "LONG",
+      "fill_price": 2330.080078125,
+      "quantity": 0.643755,
+      "position_usd": 1500.0,
+      "stop_loss": 2337.44,
+      "target_1": 2315.64,
+      "target_2": 2304.74,
+      "confidence": 5.908,
+      "strategy_dna": "mean_reversion",
+      "cb_size_mult": 1.0,
+      "signal_mult": 0.75,
+      "opened_at": "2026-05-03T16:45:08.629196+00:00"
+    },
+    {
+      "symbol": "ETH/USD",
+      "direction": "LONG",
+      "entry_price": 2330.080078125,
+      "exit_price": 2330.080078125,
+      "quantity": 0.3218773496417857,
+      "pnl_usd": 0.0,
+      "pnl_pct": 0.0,
+      "exit_reason": "Trailing stop hit at 2330.08 (stop=2330.08)",
+      "closed_at": "2026-05-03T16:45:08.712605+00:00"
+    },
+    {
+      "symbol": "ETH/USD",
+      "direction": "LONG",
+      "entry_price": 2330.080078125,
+      "exit_price": 2330.080078125,
+      "quantity": 0.3218773496417857,
+      "pnl_usd": 0.0,
+      "pnl_pct": 0.0,
+      "exit_reason": "Trailing stop hit at 2330.08 (stop=2330.08)",
+      "closed_at": "2026-05-03T16:45:08.712605+00:00"
+    }
+  ],
+  "total_pnl": 0.0,
+  "win_rate": 1.0,
+  "total_trades": 3,
+  "wins": 3,
+  "losses": 0,
+  "regime_breakdown": {
+    "chop": {
+      "trades": 1,
+      "pnl": 0
+    }
+  },
+  "dna_breakdown": {
+    "mean_reversion": {
+      "trades": 1,
+      "pnl": 0.0,
+      "wins": 3
+    }
+  },
+  "lessons": {
+    "performance_grade": "B",
+    "top_insight": "The price is currently hovering around the moving averages, indicating a potential consolidation phase.",
+    "daily_market_report": "# Daily Market Report\n\n## Current Price Analysis\nThe current closing price of the asset is **$2325.80**. This price is very close to the short-term moving averages, specifically the **9-EMA** (Exponential Moving Average) at **$2327.19** and the **21-EMA** at **$2324.94**. This proximity suggests that the market is in a state of indecision, where buyers and sellers are closely matched.\n\n## Moving Averages Overview\n- **9-EMA**: $2327.19  \n- **21-EMA**: $2324.94  \n- **50-EMA**: $2319.40  \n\nThe **9-EMA** is slightly above the current price, while the **21-EMA** is just below it. This indicates that the price is oscillating around these averages, which often serves as support or resistance levels. The **50-EMA** is further below, suggesting that if the price were to drop significantly, it could find support there. Overall, the moving averages indicate a potential consolidation phase, where the price may not move significantly in either direction until a clearer trend emerges.\n\n## RSI (Relative Strength Index) Analysis\nThe **RSI** is currently at **53.73**, which is just above the neutral level of 50. This suggests that the market is neither overbought nor oversold. An RSI above 50 typically indicates that the asset is in a bullish trend, but since it is close to the neutral zone, it also suggests that momentum is weak. Traders should watch for any significant movements in the RSI, as a rise above 60 could indicate increasing bullish momentum, while a drop below 50 could signal bearish sentiment.\n\n## MACD (Moving Average Convergence Divergence) Analysis\nThe **MACD Histogram** is currently at **-0.5617**, which indicates that the MACD line is below the signal line. This negative value suggests that the momentum is currently bearish, although it is not extremely low. The MACD can help traders identify potential buy or sell signals, and the current negative histogram indicates that sellers are slightly in control. However, the distance from zero is not significant, which means that the bearish momentum may not be strong enough to lead to a major price drop.\n\n## Volume Analysis\nThe **Volume (RVOL)** is at **0.00x average**, indicating that trading volume is extremely low. Low volume can often lead to increased volatility, as fewer trades can cause larger price swings. It also suggests that there is a lack of strong conviction from traders in either direction, which aligns with the current price action being close to the moving averages.\n\n## Conclusion\nIn summary, the market is currently in a state of consolidation with the price hovering around key moving averages. The RSI indicates a neutral momentum, while the MACD suggests a slight bearish sentiment. Low trading volume adds to the uncertainty, making it difficult to predict a clear direction for the asset.\n\n### Recommendation\nGiven the current conditions, traders should exercise caution. It may be wise to wait for a clearer signal before making any significant trades. If the price breaks above the 9-EMA, it could indicate a bullish trend, while a drop below the 21-EMA could signal a bearish move. \n\n### Expectations for Tomorrow\nTraders should be prepared for potential volatility as the market seeks direction. Watch for any significant movements in the price relative to the moving averages, as well as changes in the RSI and MACD for further insights into market sentiment.",
+    "strategy_lessons": [
+      {
+        "dna": "Monitor moving averages closely for breakout signals.",
+        "assessment": "The price is currently near key moving averages, which could indicate a breakout opportunity.",
+        "adjust": "maintain"
+      }
+    ],
+    "failure_patterns": [
+      "Price remains stagnant around moving averages without a clear breakout.",
+      "Low volume leading to increased volatility without direction."
+    ],
+    "tomorrow_rules": [
+      "Watch for price movement above the 9-EMA for potential bullish signals.",
+      "Be cautious of any drop below the 21-EMA, which could indicate bearish momentum."
+    ]
+  },
+  "circuit_events": [],
+  "morning_briefing": "\ud83c\udf05 ATLAS Morning Briefing\n\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\u2501\nYesterday Grade:  B\nP&L:  $+0.00 | Win Rate: 100%\nDNA Weights: MOM:1.00 MR:1.00 SENT:1.00\n\nTop Insight:\nThe price is currently hovering around the moving averages, indicating a potential consolidation phase.\n\nToday's Rules:\n\u2022 Watch for price movement above the 9-EMA for potential bullish signals.\n\u2022 Be cautious of any drop below the 21-EMA, which could indicate bearish momentum."
+}

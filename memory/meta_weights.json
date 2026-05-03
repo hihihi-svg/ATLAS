@@ -1,0 +1,26 @@
+{
+  "default": {
+    "w_rl": 0.5,
+    "w_tech": 2.5,
+    "w_analyst": 1.0,
+    "w_risk": 4.0
+  },
+  "bull": {
+    "w_rl": 0.3,
+    "w_tech": 3.0,
+    "w_analyst": 1.5,
+    "w_risk": 4.0
+  },
+  "bear": {
+    "w_rl": 1.0,
+    "w_tech": 2.0,
+    "w_analyst": 0.5,
+    "w_risk": 5.0
+  },
+  "chop": {
+    "w_rl": 0.2,
+    "w_tech": 4.0,
+    "w_analyst": 0.5,
+    "w_risk": 3.0
+  }
+}

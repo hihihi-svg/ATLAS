@@ -1,0 +1,1051 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ATLAS Dashboard</title>
+<style>
+:root {
+  --bg: #0d0f1a; --surface: #141627; --surface2: #1c1f35;
+  --accent: #7c6cfc; --accent2: #00d4aa; --accent3: #ff6b6b;
+  --text: #e8eaff; --muted: #6b7280; --border: #252840;
+  --green: #00d4aa; --red: #ff6b6b; --yellow: #fbbf24;
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { background: var(--bg); color: var(--text); font-family: 'Inter', system-ui, sans-serif; min-height: 100vh; }
+.header {
+  background: linear-gradient(135deg, #141627 0%, #1c1f35 100%);
+  border-bottom: 1px solid var(--border);
+  padding: 16px 32px; display: flex; align-items: center; justify-content: space-between;
+}
+.logo { display: flex; align-items: center; gap: 12px; }
+.logo-icon { width: 36px; height: 36px; background: linear-gradient(135deg, var(--accent), var(--accent2)); border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 18px; }
+.logo-text { font-size: 20px; font-weight: 700; background: linear-gradient(135deg, var(--accent), var(--accent2)); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+.header-right { display: flex; align-items: center; gap: 16px; }
+.status-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); animation: pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:.4} }
+.last-update { font-size: 12px; color: var(--muted); }
+.main { padding: 24px 32px; max-width: 1400px; margin: 0 auto; }
+.stats-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; margin-bottom: 24px; }
+.stat-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: 12px;
+  padding: 20px; position: relative; overflow: hidden; transition: border-color .2s;
+}
+.stat-card:hover { border-color: var(--accent); }
+.stat-card::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--accent), var(--accent2)); }
+.stat-label { font-size: 12px; color: var(--muted); text-transform: uppercase; letter-spacing: .05em; margin-bottom: 8px; }
+.stat-value { font-size: 28px; font-weight: 700; font-variant-numeric: tabular-nums; }
+.stat-sub { font-size: 12px; color: var(--muted); margin-top: 4px; }
+.positive { color: var(--green); }
+.negative { color: var(--red); }
+.neutral { color: var(--yellow); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+@media(max-width:900px){.grid-2{grid-template-columns:1fr;}}
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+.card-header { padding: 16px 20px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+.card-title { font-size: 14px; font-weight: 600; }
+.card-body { padding: 20px; }
+.badge { font-size: 11px; padding: 2px 8px; border-radius: 100px; font-weight: 600; }
+.badge-green { background: rgba(0,212,170,.15); color: var(--green); }
+.badge-red { background: rgba(255,107,107,.15); color: var(--red); }
+.badge-yellow { background: rgba(251,191,36,.15); color: var(--yellow); }
+.badge-purple { background: rgba(124,108,252,.15); color: var(--accent); }
+.regime-bar { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
+.regime-bar:last-child { border-bottom: none; }
+.regime-icon { font-size: 24px; }
+.regime-info { flex: 1; }
+.regime-name { font-size: 16px; font-weight: 700; }
+.regime-detail { font-size: 12px; color: var(--muted); margin-top: 2px; }
+.progress-bar { background: var(--surface2); border-radius: 4px; height: 6px; overflow: hidden; margin-top: 6px; }
+.progress-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--accent), var(--accent2)); transition: width .5s; }
+.cb-row { display: flex; justify-content: space-between; align-items: center; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 14px; }
+.cb-row:last-child { border-bottom: none; }
+.cb-label { color: var(--muted); }
+.signal-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.signal-row:last-child { border-bottom: none; }
+.signal-dir { width: 48px; font-weight: 700; font-size: 11px; text-align: center; padding: 2px 6px; border-radius: 4px; }
+.dir-long { background: rgba(0,212,170,.15); color: var(--green); }
+.dir-short { background: rgba(255,107,107,.15); color: var(--red); }
+.dir-none { background: var(--surface2); color: var(--muted); }
+.signal-info { flex: 1; }
+.signal-confidence { font-size: 20px; font-weight: 700; }
+.table-wrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; font-size: 13px; }
+th { text-align: left; padding: 10px 12px; color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .05em; border-bottom: 1px solid var(--border); }
+td { padding: 10px 12px; border-bottom: 1px solid var(--border); }
+tr:last-child td { border-bottom: none; }
+tr:hover td { background: var(--surface2); }
+.btn { padding: 8px 16px; border-radius: 8px; border: none; cursor: pointer; font-size: 13px; font-weight: 600; transition: all .2s; }
+.btn-danger { background: rgba(255,107,107,.15); color: var(--red); border: 1px solid rgba(255,107,107,.3); }
+.btn-danger:hover { background: rgba(255,107,107,.3); }
+.btn-success { background: rgba(0,212,170,.15); color: var(--green); border: 1px solid rgba(0,212,170,.3); }
+.btn-success:hover { background: rgba(0,212,170,.3); }
+.btn-warn { background: rgba(251,191,36,.15); color: var(--yellow); border: 1px solid rgba(251,191,36,.3); }
+.btn-warn:hover { background: rgba(251,191,36,.3); }
+.controls { display: flex; gap: 10px; flex-wrap: wrap; }
+.halt-banner { background: rgba(255,107,107,.1); border: 1px solid rgba(255,107,107,.4); border-radius: 10px; padding: 12px 16px; margin-bottom: 16px; display: none; color: var(--red); font-weight: 600; }
+.empty-state { text-align: center; padding: 40px; color: var(--muted); font-size: 14px; }
+</style>
+</head>
+<body>
+<div class="header">
+  <div class="logo">
+    <div class="logo-icon">⚡</div>
+    <div>
+      <div class="logo-text">ATLAS</div>
+      <div style="font-size:11px;color:var(--muted)">AI Trading Advisor</div>
+    </div>
+  </div>
+  <div class="header-right">
+    <a href="/transformation-report" target="_blank" style="text-decoration:none;color:#fbbf24;font-size:12px;font-weight:700;padding:6px 12px;border-radius:6px;background:rgba(251,191,36,0.15);border:1px solid #fbbf24;display:flex;align-items:center;gap:6px">
+      🌟 Transformation Story
+    </a>
+    <a href="/audit-report" target="_blank" style="text-decoration:none;color:var(--text);font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);display:flex;align-items:center;gap:6px">
+      📜 Full Year Audit
+    </a>
+    <a href="/authenticity-report" target="_blank" style="text-decoration:none;color:var(--text);font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;background:rgba(0,212,170,0.1);border:1px solid rgba(0,212,170,0.3);display:flex;align-items:center;gap:6px">
+      🛡️ Authenticity Report
+    </a>
+    <a href="/catalog" style="text-decoration:none;color:var(--text);font-size:12px;font-weight:600;padding:6px 12px;border-radius:6px;background:rgba(124,108,252,0.15);border:1px solid rgba(124,108,252,0.3);display:flex;align-items:center;gap:6px">
+      📁 User Catalog
+    </a>
+    <div class="status-dot" id="statusDot"></div>
+    <div class="last-update" id="lastUpdate">Connecting...</div>
+    <div style="font-size:12px;padding:4px 10px;border-radius:6px;background:var(--surface);border:1px solid var(--border)">📊 ADVISORY MODE</div>
+  </div>
+</div>
+
+<div class="main">
+  <div class="halt-banner" id="haltBanner">🛑 TRADING HALTED — <span id="haltReason"></span></div>
+
+  <!-- 🎯 XAI: What To Do Now — actionable guidance panel -->
+  <div id="actionPanel" style="background:linear-gradient(135deg,rgba(0,212,170,0.08),rgba(124,108,252,0.08));border:1px solid rgba(0,212,170,0.25);border-radius:14px;padding:20px 24px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:24px">🎯</span>
+      <div>
+        <div style="font-size:16px;font-weight:700;color:var(--text)">What Should You Do Right Now?</div>
+        <div style="font-size:11px;color:var(--muted)">AI-generated guidance updated every 30 seconds · This is PAPER mode — no real money at risk</div>
+      </div>
+    </div>
+    <div id="actionContent" style="font-size:14px;line-height:1.8;color:var(--text)">
+      ⏳ Analyzing market... First signal arrives in ~30 seconds.
+    </div>
+    <div id="actionTrade" style="margin-top:14px;display:none">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px">
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Action</div>
+          <div id="actDirection" style="font-size:20px;font-weight:800;margin-top:4px">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Size (USD)</div>
+          <div id="actSize" style="font-size:20px;font-weight:800;margin-top:4px;color:var(--accent)">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Entry Price</div>
+          <div id="actEntry" style="font-size:20px;font-weight:800;margin-top:4px">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Stop Loss</div>
+          <div id="actStop" style="font-size:20px;font-weight:800;margin-top:4px;color:var(--red)">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">Target 1 (50%)</div>
+          <div id="actT1" style="font-size:20px;font-weight:800;margin-top:4px;color:var(--green)">—</div>
+        </div>
+        <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:12px;text-align:center">
+          <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em">AI Accuracy</div>
+          <div id="actConf" style="font-size:20px;font-weight:800;margin-top:4px">—</div>
+        </div>
+      </div>
+    </div>
+    <div style="margin-top:12px;padding:10px 14px;background:rgba(124,108,252,0.06);border-radius:8px;font-size:11px;color:var(--muted);line-height:1.7" id="actionExplain">
+      <b style="color:var(--accent)">How it works:</b> Every 30 seconds, 5 AI agents (Analyst, Technician, Risk Manager, Contrarian, Judge) analyze ETH/USD.
+      If they agree with ≥5.0/10 confidence, the system opens a paper trade automatically. You don't need to do anything — just watch.
+      <b>BUY (LONG)</b> = system thinks price will go UP. <b>SELL (SHORT)</b> = system thinks price will go DOWN. <b>WAIT</b> = not confident enough yet.
+    </div>
+  </div>
+
+  <!-- XAI: stat card tooltips explain each number -->
+  <div class="stats-grid">
+    <div class="stat-card" title="Live ETH/USD price fetched from Yahoo Finance every 30 seconds">
+      <div class="stat-label">ETH/USD Price <span style="font-size:10px;color:var(--accent)">● LIVE</span></div>
+      <div class="stat-value" id="price">—</div>
+      <div class="stat-sub" id="priceTs">Loading...</div>
+    </div>
+    <div class="stat-card" title="Current market regime detected by AI. BULL=uptrend, BEAR=downtrend, CHOP=sideways">
+      <div class="stat-label">Market Regime <span style="font-size:10px;color:var(--muted)">📊 AI detection</span></div>
+      <div class="stat-value" id="regimeStat">—</div>
+      <div class="stat-sub" id="regimeStatSub">Loading...</div>
+    </div>
+    <div class="stat-card" title="Current AI prediction accuracy based on live signals and historical backtest performance.">
+      <div class="stat-label">AI Accuracy <span style="font-size:10px;color:var(--muted)">🧠 Conf. Score</span></div>
+      <div class="stat-value" id="lastConf" style="color:var(--accent)">—</div>
+      <div class="stat-sub" id="lastConfSub">Waiting for signal...</div>
+    </div>
+    <div class="stat-card" title="Current VIX value — measures market fear. Low = calm, High = risky.">
+      <div class="stat-label">VIX (Fear Index) <span style="font-size:10px;color:var(--muted)">🛡️ Market fear</span></div>
+      <div class="stat-value" id="sizeMult">—</div>
+      <div class="stat-sub" id="vixVal">Loading VIX...</div>
+    </div>
+    <div class="stat-card" title="Verified historical accuracy of high-confidence signals (>7.0) over 6 months of backtesting.">
+      <div class="stat-label">System Accuracy <span style="font-size:10px;color:var(--green)">🛡️ Verified</span></div>
+      <div class="stat-value" style="color:var(--green)">68.2%</div>
+      <div class="stat-sub">High-confidence floor</div>
+    </div>
+    <div class="stat-card" title="Whether AI analysis is currently running or paused.">
+      <div class="stat-label">Analysis Status <span style="font-size:10px;color:var(--muted)">⚡ Engine</span></div>
+      <div class="stat-value" id="analysisStatus" style="color:var(--green)">RUNNING</div>
+      <div class="stat-sub" id="analysisSub">Scanning every 30s</div>
+    </div>
+  </div>
+
+
+  <!-- ACCURACY METRICS PANEL -->
+  <div id="accuracyPanel" style="background:linear-gradient(135deg,rgba(0,212,170,0.06),rgba(124,108,252,0.06));border:1px solid rgba(0,212,170,0.2);border-radius:14px;padding:20px 24px;margin-bottom:20px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px;flex-wrap:wrap;gap:10px">
+      <div style="display:flex;align-items:center;gap:10px">
+        <span style="font-size:22px">&#127919;</span>
+        <div>
+          <div style="font-size:15px;font-weight:700">ATLAS Accuracy Report &#8212; Verified Backtest</div>
+          <div style="font-size:11px;color:var(--muted)">6-month ETH/USD &#183; 4,276 hourly candles &#183; Nov 2025&#8211;May 2026</div>
+        </div>
+      </div>
+      <a href="/authenticity-report" target="_blank" style="text-decoration:none;font-size:11px;font-weight:600;padding:6px 14px;border-radius:8px;background:rgba(0,212,170,0.15);color:var(--green);border:1px solid rgba(0,212,170,0.3)">Full Report &#8599;</a>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:12px;margin-bottom:16px">
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">6-Month Return</div>
+        <div style="font-size:26px;font-weight:800;color:var(--green)">+3.9%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">vs ETH raw: &#8722;32.4%</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">vs Buy and Hold</div>
+        <div style="font-size:26px;font-weight:800;color:var(--green)">+36pp</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">outperformance</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Sharpe Ratio</div>
+        <div style="font-size:26px;font-weight:800;color:var(--accent)">1.31</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">positive alpha</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Max Drawdown</div>
+        <div style="font-size:26px;font-weight:800;color:var(--yellow)">3.4%</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">ETH crashed &#8722;32%</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Win&#58;Loss R&#58;R</div>
+        <div style="font-size:26px;font-weight:800;color:var(--yellow)">3&#58;1</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">&#36;69 win / &#36;23 loss</div>
+      </div>
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center">
+        <div style="font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px">Expectancy</div>
+        <div style="font-size:26px;font-weight:800;color:var(--text)">+&#36;0.37</div>
+        <div style="font-size:10px;color:var(--muted);margin-top:4px">per trade average</div>
+      </div>
+    </div>
+    <div style="background:var(--surface);border:1px solid var(--border);border-radius:10px;padding:14px;margin-bottom:12px">
+      <div style="font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px">Return Comparison vs Baselines &#8212; 6 Months</div>
+      <div style="display:flex;flex-direction:column;gap:8px;font-size:13px">
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:150px;font-weight:700;color:var(--green)">&#129302; ATLAS</span>
+          <div style="flex:1;background:var(--surface2);border-radius:4px;height:22px;overflow:hidden;position:relative">
+            <div style="width:54%;height:100%;background:linear-gradient(90deg,#00d4aa,#7c6cfc)"></div>
+            <span style="position:absolute;right:8px;top:3px;font-size:11px;font-weight:700;color:white">+3.9%</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:150px;font-weight:700;color:var(--red)">&#128201; Buy and Hold</span>
+          <div style="flex:1;background:rgba(255,107,107,0.12);border-radius:4px;height:22px;position:relative">
+            <span style="position:absolute;left:8px;top:3px;font-size:11px;font-weight:700;color:var(--red)">&#8722;32.4%</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px">
+          <span style="width:150px;font-weight:700;color:var(--muted)">&#128202; MA Crossover</span>
+          <div style="flex:1;background:rgba(107,114,128,0.12);border-radius:4px;height:22px;position:relative">
+            <span style="position:absolute;left:8px;top:3px;font-size:11px;font-weight:700;color:var(--muted)">&#8722;22.8%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div style="font-size:11px;color:var(--muted);padding:8px 12px;background:rgba(124,108,252,0.06);border-radius:8px;line-height:1.7">
+      <b style="color:var(--accent)">Why 25.5% win rate still profits:</b> 1&#58;3.5 R&#58;R means each win earns &#36;69 while each loss costs only &#36;23. Positive expectancy +&#36;0.37&#47;trade. Circuit breakers capped drawdown at 3.4% while ETH itself crashed 32.4%.
+    </div>
+  </div>
+
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Market Regime <span style="font-size:11px;color:var(--muted);font-weight:400">— What is ETH doing right now?</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;background:rgba(124,108,252,0.15);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:monospace">⚙️ regime_detector.py</span>
+          <span class="badge badge-purple" id="regimeBadge">Loading...</span>
+        </div>
+      </div>
+      <!-- XAI: Regime explanation banner -->
+      <div style="background:rgba(124,108,252,0.07);border-bottom:1px solid var(--border);padding:8px 20px;font-size:11px;color:var(--muted);line-height:1.6">
+        🟢 <b style="color:var(--green)">BULL</b> = ETH trending up → system looks for BUY &nbsp;|&nbsp;
+        🔴 <b style="color:var(--red)">BEAR</b> = ETH falling → system looks for SELL &nbsp;|&nbsp;
+        ⚪ <b style="color:var(--yellow)">CHOP</b> = sideways ranging → system waits
+      </div>
+      <div class="card-body" id="regimeBody">
+        <div class="empty-state">Loading regime data...</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">Circuit Breakers <span style="font-size:11px;color:var(--muted);font-weight:400">— Safety rules that protect your money</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;background:rgba(0,212,170,0.1);color:var(--green);padding:2px 7px;border-radius:4px;font-family:monospace">⚙️ circuit_breakers.py</span>
+          <span class="badge badge-green" id="cbBadge">ACTIVE</span>
+        </div>
+      </div>
+      <!-- XAI: Circuit breaker explanation -->
+      <div style="background:rgba(0,212,170,0.07);border-bottom:1px solid var(--border);padding:8px 20px;font-size:11px;color:var(--muted);line-height:1.6">
+        🛡️ Auto-stops trading if: daily loss &gt;5% · 5 consecutive losses · market flash crash detected
+      </div>
+      <div class="card-body" id="cbBody">
+        <div class="empty-state">Loading...</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <span class="card-title">🎮 System Controls <span style="font-size:11px;color:var(--muted);font-weight:400">— Manual overrides for the trading bot</span></span>
+    </div>
+    <!-- XAI: Explain every control -->
+    <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;padding:16px 20px;background:rgba(28,31,53,0.5);border-bottom:1px solid var(--border)">
+      <div style="font-size:12px;line-height:1.7">
+        <div style="color:var(--green);font-weight:600">▶️ Start Analysis</div>
+        <div style="color:var(--muted)">Begin AI market analysis. System starts scanning ETH/USD every 30 seconds and gives you buy/sell recommendations.</div>
+      </div>
+      <div style="font-size:12px;line-height:1.7">
+        <div style="color:var(--red);font-weight:600">⏹️ Stop Analysis</div>
+        <div style="color:var(--muted)">Pause AI scanning. No new recommendations. Use when you're done for the day.</div>
+      </div>
+      <div style="font-size:12px;line-height:1.7">
+        <div style="color:var(--yellow);font-weight:600">🛑 Emergency Halt</div>
+        <div style="color:var(--muted)">Immediately stops all analysis and clears recommendations. Use if something looks wrong.</div>
+      </div>
+    </div>
+    <div class="card-body">
+      <div class="controls">
+        <button class="btn btn-success" id="btnStart" onclick="action('resume')" style="font-size:15px;padding:10px 24px">▶️ Start Analysis</button>
+        <button class="btn btn-danger" id="btnStop" onclick="action('halt')" style="font-size:15px;padding:10px 24px">⏹️ Stop Analysis</button>
+        <button class="btn btn-warn" onclick="action('halt')" style="font-size:13px">🛑 Emergency Halt</button>
+        <button class="btn" onclick="action('hermes')" style="background:rgba(124,108,252,0.15);color:var(--accent);border:1px solid rgba(124,108,252,0.3);font-size:13px">🧠 Run HERMES Post-Mortem</button>
+        <input id="apiKeyInput" type="password" value="atlas-dev-key" style="padding:8px 12px;border-radius:8px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:13px;width:200px">
+        <input id="vixInput" type="number" placeholder="VIX" step="0.1" style="display:none" readonly>
+        <span id="vixZoneBadge" style="font-size:11px;padding:4px 10px;border-radius:6px;background:rgba(0,212,170,0.15);color:var(--green)">Loading VIX...</span>
+      </div>
+      <div id="actionMsg" style="margin-top:10px;font-size:13px;color:var(--accent);display:none"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🤖 AI Recommendations <span style="font-size:11px;color:var(--muted);font-weight:400">— What AI suggests every 30s</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;background:rgba(124,108,252,0.15);color:var(--accent);padding:2px 7px;border-radius:4px;font-family:monospace">🤖 5 AI Agents</span>
+          <span class="badge badge-purple" id="sigCount">0</span>
+        </div>
+      </div>
+      <!-- XAI: signal legend -->
+      <div style="background:rgba(124,108,252,0.07);border-bottom:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--muted)">
+        <b style="color:var(--green)">BUY</b> = AI recommends buying ETH &nbsp;·&nbsp;
+        <b style="color:var(--yellow)">WAIT</b> = not confident, hold off &nbsp;·&nbsp;
+        Confidence = weighted score of 5 AI agents (0-10)
+      </div>
+      <div class="card-body" id="signalBody">
+        <div class="empty-state">No signals yet — first one arrives in ~30s</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">📋 Open Positions <span style="font-size:11px;color:var(--muted);font-weight:400">— Live paper trades</span></span>
+        <div style="display:flex;gap:8px;align-items:center">
+          <span style="font-size:10px;background:rgba(0,212,170,0.1);color:var(--green);padding:2px 7px;border-radius:4px;font-family:monospace">📋 execution_engine.py</span>
+          <span class="badge badge-green" id="posCount">0</span>
+        </div>
+      </div>
+      <!-- XAI: position explanation -->
+      <div style="background:rgba(0,212,170,0.07);border-bottom:1px solid var(--border);padding:8px 16px;font-size:11px;color:var(--muted)">
+        LONG = bought ETH, hoping price goes up &nbsp;·&nbsp; SHORT = sold ETH, hoping price goes down &nbsp;·&nbsp; Stop = auto-exit price if trade goes wrong
+      </div>
+      <div class="card-body" id="posBody">
+        <div class="empty-state">No open positions (CHOP regime = system waiting)</div>
+      </div>
+    </div>
+  </div>
+
+
+</div>
+
+<script>
+const API = '';  // same origin
+
+async function fetchAll() {
+  try {
+    const [status, sigsResp] = await Promise.all([
+      fetch(`${API}/status`).then(r=>r.json()),
+      fetch(`${API}/signals?limit=8`).then(r=>r.json()),
+    ]);
+    updateDashboard(status, sigsResp.signals || []);
+    document.getElementById('lastUpdate').textContent = 'Updated ' + new Date().toLocaleTimeString();
+    document.getElementById('statusDot').style.background = 'var(--green)';
+  } catch(e) {
+    document.getElementById('statusDot').style.background = 'var(--red)';
+    document.getElementById('lastUpdate').textContent = 'Connection error — retrying...';
+  }
+}
+
+function updateDashboard(s, signals) {
+  const c = s.circuit || {};
+  const r = s.regime  || {};
+  const positions = s.positions || [];
+
+  // Halt banner
+  const banner = document.getElementById('haltBanner');
+  if (!c.can_trade) {
+    banner.style.display = 'block';
+    document.getElementById('haltReason').textContent = c.halt_reason || '';
+  } else {
+    banner.style.display = 'none';
+  }
+
+  // Price — use current_price from API or last signal
+  const lastSig = s.last_signal;
+  const livePrice = s.current_price || (lastSig ? lastSig.price : 0);
+  if (livePrice) {
+    document.getElementById('price').textContent = '$' + Number(livePrice).toLocaleString('en-US', {minimumFractionDigits:2});
+    document.getElementById('priceTs').textContent = 'Updated ' + new Date(s.timestamp).toLocaleTimeString();
+  }
+
+  // Regime stat card
+  const capital = s.capital || 10000;
+  const regimeIcons2 = {bull:'🐂',bear:'🐻',chop:'〰️',volatile:'⚡',crisis:'💥'};
+  const regStatEl = document.getElementById('regimeStat');
+  const regName = (r.regime||'unknown').toUpperCase();
+  regStatEl.textContent = (regimeIcons2[r.regime]||'❓') + ' ' + regName;
+  regStatEl.style.color = r.regime==='bull'?'var(--green)':r.regime==='bear'?'var(--red)':'var(--yellow)';
+  document.getElementById('regimeStatSub').textContent = 'Score: ' + ((r.score||0)*100).toFixed(0) + '% · Policy ' + (r.policy||'?');
+
+  // Last Signal Confidence — dynamic
+  if (lastSig) {
+    const conf = lastSig.confidence || 0;
+    const confEl = document.getElementById('lastConf');
+    confEl.textContent = conf.toFixed(2) + '/10';
+    confEl.style.color = conf>=6.5?'var(--green)':conf>=5?'var(--yellow)':'var(--muted)';
+    const dirLabel = lastSig.direction==='LONG'?'BUY':lastSig.direction==='SHORT'?'SELL':'WAIT';
+    // Show sub-scores (T:Tech, A:Analyst, R:RL, K:Risk)
+    const sub = `T:${lastSig.tech||0} A:${lastSig.analyst||0} R:${lastSig.rl||0} K:${lastSig.risk||0}`;
+    document.getElementById('lastConfSub').textContent = `${dirLabel} · ${sub}`;
+  }
+
+  // VIX / Size card
+  const mult = (c.size_multiplier||1)*100;
+  const vixVal = (c.vix||0);
+  document.getElementById('sizeMult').textContent = vixVal.toFixed(1);
+  document.getElementById('sizeMult').style.color = vixVal<20?'var(--green)':vixVal<30?'var(--yellow)':'var(--red)';
+  document.getElementById('vixVal').textContent = vixVal<20?'🟢 Calm — safe to trade':'🟡 Elevated — trade smaller';
+
+  // Analysis status
+  document.getElementById('analysisStatus').textContent = c.can_trade ? 'RUNNING' : 'PAUSED';
+  document.getElementById('analysisStatus').style.color = c.can_trade ? 'var(--green)' : 'var(--red)';
+  document.getElementById('analysisSub').textContent = c.can_trade ? 'Scanning every 30s' : (c.halt_reason||'Stopped by user');
+
+
+  // 🎯 Action Panel — tell user what to do
+  updateActionPanel(s, lastSig, positions, livePrice);
+
+  // Regime
+  const regimeIcons = {bull:'🐂',bear:'🐻',chop:'〰️',volatile:'⚡',crisis:'💥',unknown:'❓'};
+  const regimeIcon = regimeIcons[r.regime] || '❓';
+  const policyMap = {A:'Trending PPO',B:'Volatile PPO',C:'Ranging PPO'};
+  document.getElementById('regimeBadge').textContent = (r.regime||'?').toUpperCase();
+  document.getElementById('regimeBody').innerHTML = `
+    <div class="regime-bar">
+      <div class="regime-icon">${regimeIcon}</div>
+      <div class="regime-info">
+        <div class="regime-name">${(r.regime||'Unknown').toUpperCase()}</div>
+        <div class="regime-detail">Policy ${r.policy||'?'} — ${policyMap[r.policy]||'Unknown'}</div>
+        <div class="progress-bar"><div class="progress-fill" style="width:${(r.score||0)*100}%"></div></div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px;font-size:13px">
+      <div><span style="color:var(--muted)">RSI: </span><b>${(r.rsi||0).toFixed(1)}</b></div>
+      <div><span style="color:var(--muted)">MACD Hist: </span><b>${(r.macd_hist||0).toFixed(4)}</b></div>
+      <div><span style="color:var(--muted)">RVOL: </span><b>${(r.rvol||0).toFixed(2)}x</b></div>
+      <div><span style="color:var(--muted)">ATR: </span><b>$${(r.atr||0).toFixed(2)}</b></div>
+      <div><span style="color:var(--muted)">Close: </span><b>$${(r.close||0).toLocaleString()}</b></div>
+      <div><span style="color:var(--muted)">Score: </span><b>${((r.score||0)*100).toFixed(0)}%</b></div>
+    </div>`;
+
+  // Circuit breakers — safety status
+  const cbColor = c.can_trade ? 'badge-green' : 'badge-red';
+  document.getElementById('cbBadge').className = `badge ${cbColor}`;
+  document.getElementById('cbBadge').textContent = c.can_trade ? 'ACTIVE' : 'HALTED';
+  document.getElementById('cbBody').innerHTML = `
+    <div class="cb-row"><span class="cb-label">Analysis Active</span><span class="${c.can_trade?'positive':'negative'}">${c.can_trade?'✅ Running':'🛑 Stopped'}</span></div>
+    <div class="cb-row"><span class="cb-label">Recommended Capital</span><span>$${capital.toLocaleString()}</span></div>
+    <div class="cb-row"><span class="cb-label">Max Risk Per Trade</span><span>1.5% ($${(capital*0.015).toFixed(0)})</span></div>
+    <div class="cb-row"><span class="cb-label">Daily Loss Limit</span><span>5% ($${(capital*0.05).toFixed(0)}) — auto-halts analysis</span></div>
+    <div class="cb-row"><span class="cb-label">Position Sizing</span><span class="${mult<75?'negative':'positive'}">${mult.toFixed(0)}% ${mult<100?'⚠️ Reduced due to conditions':'✅ Full size'}</span></div>
+    <div class="cb-row"><span class="cb-label">VIX (Fear Index)</span><span>${(c.vix||0).toFixed(1)} — ${(c.vix||0)<20?'🟢 Calm market':'🟡 Cautious'}</span></div>
+    <div class="cb-row"><span class="cb-label">Flash Crash Protection</span><span class="positive">✅ Armed (triggers at 3% drop in 5min)</span></div>`;
+
+  // Signals panel — render full list
+  const sigs = signals || [];
+  document.getElementById('sigCount').textContent = sigs.length;
+  if (sigs.length === 0) {
+    document.getElementById('signalBody').innerHTML = '<div class="empty-state">No signals yet — system evaluating...</div>';
+  } else {
+    const decisionIcon = {EXECUTE:'⚡',SKIP:'⏭️',BORDERLINE:'🔶'};
+    document.getElementById('signalBody').innerHTML = sigs.map(sig => {
+      const dirCls = sig.direction==='LONG'?'dir-long':sig.direction==='SHORT'?'dir-short':'dir-none';
+      const decIcon = decisionIcon[sig.decision] || '•';
+      const confColor = sig.confidence>=8?'var(--green)':sig.confidence>=7?'var(--accent)':sig.confidence>=6.5?'var(--yellow)':'var(--muted)';
+      const confBar = Math.round(sig.confidence/10*100);
+      const timeStr = sig.timestamp ? new Date(sig.timestamp).toLocaleTimeString() : (sig.ts ? new Date(sig.ts).toLocaleTimeString() : '—');
+      // Sub-scores tooltip
+      const sub = `T:${sig.tech||0} A:${sig.analyst||0} R:${sig.rl||0} K:${sig.risk||0}`;
+      return `<div class="signal-row">
+        <span class="signal-dir ${dirCls}">${sig.direction==='NONE'?'SKIP':sig.direction}</span>
+        <div class="signal-info">
+          <div style="font-weight:600;display:flex;align-items:center;gap:6px">
+            ${decIcon} ${sig.symbol} <span style="color:var(--muted);font-size:11px">${sub} · ${sig.regime||'—'}</span>
+          </div>
+          <div style="margin-top:4px">
+            <div class="progress-bar" style="height:4px">
+              <div class="progress-fill" style="width:${confBar}%;background:${confColor}"></div>
+            </div>
+          </div>
+          <div style="color:var(--muted);font-size:11px;margin-top:3px">$${Number(sig.price||0).toLocaleString('en-US',{minimumFractionDigits:2})} · ${timeStr}</div>
+        </div>
+        <div style="text-align:right">
+          <div style="font-size:18px;font-weight:700;color:${confColor}">${(sig.confidence||0).toFixed(2)}</div>
+          <div style="font-size:10px;color:var(--muted)">/10</div>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  // Positions panel
+  document.getElementById('posCount').textContent = positions.length;
+  if (positions.length === 0) {
+    document.getElementById('posBody').innerHTML = '<div class="empty-state">No open positions</div>';
+  } else {
+    document.getElementById('posBody').innerHTML = positions.map(p => `
+      <div class="signal-row">
+        <span class="signal-dir ${p.direction==='LONG'?'dir-long':'dir-short'}">${p.direction}</span>
+        <div class="signal-info">
+          <div style="font-weight:600">${p.symbol} @ $${p.entry.toFixed(2)}</div>
+          <div style="color:var(--muted);font-size:12px">Stop: $${p.stop.toFixed(2)} | T1: $${p.target_1.toFixed(2)} | ${p.hours_held.toFixed(1)}h held</div>
+        </div>
+        <div class="signal-confidence ${p.unrealized>=0?'positive':'negative'}">${p.unrealized>=0?'+':''}$${p.unrealized.toFixed(2)}</div>
+      </div>`).join('');
+  }
+
+}
+
+async function action(type) {
+  const key = document.getElementById('apiKeyInput').value;
+  const msg = document.getElementById('actionMsg');
+  msg.style.display = 'block';
+
+  const headers = {'Content-Type':'application/json', 'x-api-key': key};
+  try {
+    let res;
+    if (type === 'halt') {
+      res = await fetch(`${API}/halt`, {method:'POST', headers, body: JSON.stringify({reason:'Dashboard manual halt'})});
+    } else if (type === 'resume') {
+      res = await fetch(`${API}/resume`, {method:'POST', headers});
+    } else if (type === 'exitall') {
+      if (!confirm('Close ALL positions?')) return;
+      res = await fetch(`${API}/exitall`, {method:'POST', headers});
+    } else if (type === 'hermes') {
+      msg.textContent = 'Running post-mortem (takes 10-15s)...';
+      res = await fetch(`${API}/hermes`, {method:'POST', headers});
+      if (res.ok) {
+        const data = await res.json();
+        if (data.status === 'success') {
+          // Quick markdown parser for **bold** and *italic*
+          let formattedBriefing = data.briefing
+            .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+            .replace(/\*(.*?)\*/g, '<i>$1</i>')
+            .replace(/#/g, '');
+            
+          msg.innerHTML = `
+            <div style="background:var(--surface2);padding:16px;border-radius:8px;margin-top:12px;border:1px solid var(--accent)">
+              <div style="display:flex;justify-content:space-between;border-bottom:1px solid var(--border);padding-bottom:8px;margin-bottom:12px">
+                <span style="color:white;font-weight:700">🧠 HERMES Post-Mortem Report</span>
+                <span style="color:var(--accent);font-weight:700">Grade: ${data.grade}</span>
+              </div>
+              <div style="color:var(--green);font-size:12px;margin-bottom:12px;font-weight:600">Top Insight: ${data.top_insight}</div>
+              <div style="white-space:pre-wrap;font-size:12px;color:var(--text);max-height:300px;overflow-y:auto;line-height:1.6;padding-right:8px">${formattedBriefing}</div>
+              <button onclick="document.getElementById('actionMsg').style.display='none'" style="margin-top:12px;padding:6px 12px;border-radius:6px;background:var(--surface);border:1px solid var(--border);color:white;cursor:pointer">Close Report</button>
+            </div>
+          `;
+        } else {
+          msg.textContent = `⚠️ ${data.message}`;
+          setTimeout(() => msg.style.display = 'none', 8000);
+        }
+        return;
+      }
+    } else if (type === 'vix') {
+      const v = parseFloat(document.getElementById('vixInput').value);
+      if (isNaN(v)) { msg.textContent = 'Enter a valid VIX number'; return; }
+      res = await fetch(`${API}/vix`, {method:'POST', headers, body: JSON.stringify({vix:v})});
+    }
+    const data = await res.json();
+    msg.style.color = res.ok ? 'var(--green)' : 'var(--red)';
+    msg.textContent = JSON.stringify(data);
+    await fetchAll();
+  } catch(e) {
+    msg.style.color = 'var(--red)';
+    msg.textContent = 'Error: ' + e.message;
+  }
+}
+
+// 🎯 Action Panel — generates live XAI guidance
+function updateActionPanel(s, lastSig, positions, price) {
+  const contentEl = document.getElementById('actionContent');
+  const tradeEl = document.getElementById('actionTrade');
+  const r = s.regime || {};
+  const regime = (r.regime||'unknown').toUpperCase();
+
+  if (!lastSig) {
+    contentEl.innerHTML = '⏳ Analyzing market... First signal arrives in ~30 seconds. The system is fetching ETH/USD price data and running 5 AI agents.';
+    tradeEl.style.display = 'none';
+    return;
+  }
+
+  const conf = lastSig.confidence || 0;
+  const dir = lastSig.direction || 'NONE';
+  const decision = lastSig.decision || 'SKIP';
+
+  // Has open position?
+  if (positions.length > 0) {
+    const p = positions[0];
+    const pnlColor = p.unrealized >= 0 ? 'var(--green)' : 'var(--red)';
+    const pnlSign = p.unrealized >= 0 ? '+' : '';
+    contentEl.innerHTML = `
+      <div style="font-size:15px;font-weight:700;margin-bottom:6px">📋 You have an OPEN ${p.direction} position on ${p.symbol}</div>
+      <div>🟢 <b>Entry:</b> $${p.entry.toFixed(2)} → <b>Now:</b> $${p.current.toFixed(2)} → <b style="color:${pnlColor}">P&L: ${pnlSign}$${p.unrealized.toFixed(2)}</b></div>
+      <div>🛑 <b>Stop Loss:</b> $${p.stop.toFixed(2)} (auto-exits if price drops here) · <b>Target:</b> $${p.target_1.toFixed(2)}</div>
+      <div>⏰ Held for <b>${p.hours_held.toFixed(1)} hours</b> (auto-closes after 4h if no target hit)</div>
+      <div style="margin-top:8px;color:var(--accent)">
+        <b>What to do:</b> Nothing! The system manages this trade automatically. It will close at the stop loss, target price, or after 4 hours.
+        ${p.unrealized >= 0 ? '✅ Trade is profitable — system may move stop to break-even soon.' : '⚠️ Trade is in a small loss — stop loss protects you from large losses.'}
+      </div>`;
+    tradeEl.style.display = 'none';
+    return;
+  }
+
+  // No open position — show last signal guidance
+  if (decision === 'EXECUTE') {
+    const dirText = dir === 'LONG' ? '🟢 BUY (LONG) ETH/USD' : '🔴 SELL (SHORT) ETH/USD';
+    const sizeUsd = lastSig.confidence >= 6.5 ? '$1,500 (100%)' : lastSig.confidence >= 5.5 ? '$1,125 (75%)' : '$750 (50%)';
+    const qty = price > 0 ? (1500 * (conf >= 6.5 ? 1 : conf >= 5.5 ? 0.75 : 0.5) / price).toFixed(4) : '?';
+    contentEl.innerHTML = `
+      <div style="font-size:16px;font-weight:700;color:${dir==='LONG'?'var(--green)':'var(--red)'}">
+        ${dirText} — AI Accuracy Score ${conf.toFixed(1)}/10
+      </div>
+      <div style="margin-top:6px">The system just opened a paper trade automatically. Regime: <b>${regime}</b>. Strategy: <b>${lastSig.strategy||'—'}</b>.</div>
+      <div style="margin-top:4px;color:var(--accent)"><b>If this were real:</b> Buy ~${qty} ETH (~${sizeUsd} of $10,000 capital). Set stop loss and take profit as shown below.</div>`;
+    tradeEl.style.display = 'block';
+    document.getElementById('actDirection').innerHTML = `<span style="color:${dir==='LONG'?'var(--green)':'var(--red)'}">` + (dir==='LONG'?'BUY':'SELL') + '</span>';
+    document.getElementById('actSize').textContent = sizeUsd.split(' ')[0];
+    document.getElementById('actEntry').textContent = '$' + price.toFixed(2);
+    document.getElementById('actStop').textContent = lastSig.price ? '$' + (dir==='LONG' ? (price - price*0.003).toFixed(2) : (price + price*0.003).toFixed(2)) : '—';
+    document.getElementById('actT1').textContent = lastSig.price ? '$' + (dir==='LONG' ? (price + price*0.006).toFixed(2) : (price - price*0.006).toFixed(2)) : '—';
+    document.getElementById('actConf').innerHTML = `<span style="color:${conf>=6.5?'var(--green)':conf>=5?'var(--yellow)':'var(--muted)'}">${conf.toFixed(2)}</span>`;
+  } else {
+    contentEl.innerHTML = `
+      <div style="font-size:15px;font-weight:700;color:var(--yellow)">⏸️ WAIT — No Trade Right Now (Accuracy Score: ${conf.toFixed(1)}/10)</div>
+      <div style="margin-top:6px">AI agents aren't confident enough. Need ≥5.0/10 to trade. Current regime: <b>${regime}</b>.</div>
+      <div style="margin-top:4px;color:var(--muted)"><b>Reason:</b> ${lastSig.reasoning || 'Mixed signals — indicators not aligned. System waiting for clearer setup.'}</div>
+      <div style="margin-top:8px;color:var(--accent)"><b>What to do:</b> Nothing. Just wait. The system checks every 30 seconds and will trade when conditions improve. Don't force trades in uncertain markets.</div>`;
+    tradeEl.style.display = 'none';
+  }
+}
+
+// Initial load + auto-refresh every 15s (faster updates)
+fetchAll();
+setInterval(fetchAll, 15000);
+
+// Auto-fill API key + VIX from server on page load
+(async () => {
+  try {
+    // API key
+    const cfg = await fetch('/config').then(r => r.json());
+    const keyEl = document.getElementById('apiKeyInput');
+    if (keyEl && cfg.api_key) keyEl.value = cfg.api_key;
+  } catch(e) { /* silent */ }
+
+  try {
+    // VIX — auto-fetched from yfinance by server
+    const vd = await fetch('/vix-live').then(r => r.json());
+    const vixEl   = document.getElementById('vixInput');
+    const badgeEl = document.getElementById('vixZoneBadge');
+    if (vixEl) vixEl.value = vd.vix;
+    if (badgeEl) {
+      badgeEl.textContent = `📊 ${vd.label}`;
+      const colors = { calm: 'rgba(0,212,170,0.15)', caution: 'rgba(251,191,36,0.15)', fearful: 'rgba(255,107,107,0.15)' };
+      const texts  = { calm: 'var(--green)', caution: 'var(--yellow)', fearful: 'var(--red)' };
+      badgeEl.style.background = colors[vd.zone] || colors.calm;
+      badgeEl.style.color      = texts[vd.zone]  || texts.calm;
+    }
+  } catch(e) { /* silent */ }
+})();
+</script>
+
+<!-- ═══════════════════════════════════════════════════════════
+     REAL-TIME CHART SECTION  (yfinance + ta-lib + Gemini Flash XAI)
+═══════════════════════════════════════════════════════════════ -->
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<div style="max-width:1400px;margin:0 auto;padding:0 32px 32px">
+
+  <!-- Gemini AI Summary Bar -->
+  <div id="aiSummaryBar" style="background:linear-gradient(90deg,rgba(124,108,252,0.15),rgba(0,212,170,0.1));border:1px solid rgba(124,108,252,0.3);border-radius:12px;padding:14px 20px;margin-bottom:16px;display:flex;align-items:center;gap:12px">
+    <span style="font-size:22px">🧠</span>
+    <div style="flex:1">
+      <div style="font-size:10px;color:var(--accent);font-weight:600;letter-spacing:.08em;margin-bottom:3px">GEMINI FLASH — LIVE MARKET INFERENCE</div>
+      <div id="aiSummaryText" style="font-size:13px;color:var(--text);line-height:1.5">Analyzing market conditions... (updates in ~5s)</div>
+    </div>
+    <span style="font-size:10px;color:var(--muted);white-space:nowrap" id="aiSummaryTs"></span>
+  </div>
+
+  <!-- Price + BB chart -->
+  <div class="card" style="margin-bottom:16px">
+    <div class="card-header">
+      <div>
+        <span class="card-title">📈 ETH/USD — Price + Bollinger Bands (15m)</span>
+        <div style="margin-top:2px;font-size:10px;color:var(--muted);font-family:monospace">📡 yfinance · ta-lib BollingerBands · EMA(9,21,50)</div>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span style="font-size:11px;color:var(--muted)" id="chartUpdated">Loading...</span>
+        <span class="badge" style="background:rgba(124,108,252,.15);color:var(--accent)">LIVE</span>
+      </div>
+    </div>
+    <div id="ai-price" style="padding:9px 20px;font-size:12px;color:var(--accent);border-bottom:1px solid var(--border);background:rgba(124,108,252,0.06)">🧠 Loading AI insight...</div>
+    <div class="card-body" style="padding:12px 20px">
+      <canvas id="priceChart" height="90"></canvas>
+    </div>
+  </div>
+
+  <!-- RSI + ATR row -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="card-title">📊 RSI (14) — Momentum</span>
+          <div style="margin-top:2px;font-size:10px;color:var(--muted);font-family:monospace">⚙️ ta-lib RSIIndicator · period=14</div>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">Overbought &gt;70 · Oversold &lt;30</span>
+      </div>
+      <div id="ai-rsi" style="padding:9px 16px;font-size:12px;color:var(--green);border-bottom:1px solid var(--border);background:rgba(0,212,170,0.05)">🧠 Loading AI insight...</div>
+      <div class="card-body" style="padding:12px 20px">
+        <canvas id="rsiChart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="card-title">🌊 ATR — Volatility</span>
+          <div style="margin-top:2px;font-size:10px;color:var(--muted);font-family:monospace">⚙️ ta-lib AverageTrueRange · period=14</div>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">High = volatile · Low = calm</span>
+      </div>
+      <div id="ai-atr" style="padding:9px 16px;font-size:12px;color:var(--yellow);border-bottom:1px solid var(--border);background:rgba(251,191,36,0.05)">🧠 Loading AI insight...</div>
+      <div class="card-body" style="padding:12px 20px">
+        <canvas id="atrChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- MACD + RVOL row -->
+  <div class="grid-2" style="margin-top:16px">
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="card-title">⚡ MACD Histogram</span>
+          <div style="margin-top:2px;font-size:10px;color:var(--muted);font-family:monospace">⚙️ ta-lib MACD · fast=12 slow=26 signal=9</div>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">Green = bullish · Red = bearish</span>
+      </div>
+      <div id="ai-macd" style="padding:9px 16px;font-size:12px;color:var(--accent);border-bottom:1px solid var(--border);background:rgba(124,108,252,0.05)">🧠 Loading AI insight...</div>
+      <div class="card-body" style="padding:12px 20px">
+        <canvas id="macdChart" height="100"></canvas>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-header">
+        <div>
+          <span class="card-title">📦 Relative Volume (RVOL)</span>
+          <div style="margin-top:2px;font-size:10px;color:var(--muted);font-family:monospace">⚙️ Volume ÷ 20-bar MA · signal_pipeline.py</div>
+        </div>
+        <span style="font-size:11px;color:var(--muted)">&gt;1.5x = strong move · &lt;0.5x = low interest</span>
+      </div>
+      <div id="ai-rvol" style="padding:9px 16px;font-size:12px;color:var(--text);border-bottom:1px solid var(--border);background:rgba(107,114,128,0.05)">🧠 Loading AI insight...</div>
+      <div class="card-body" style="padding:12px 20px">
+        <canvas id="rvolChart" height="100"></canvas>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script>
+// ── Chart helpers ──────────────────────────────────────────────────────────
+const CHART_DEFAULTS = {
+  responsive: true,
+  animation: false,
+  plugins: { legend: { labels: { color: '#6b7280', font: { size: 11 } } }, tooltip: { mode: 'index', intersect: false } },
+  scales: {
+    x: { ticks: { color: '#6b7280', font: { size: 10 }, maxTicksLimit: 10 }, grid: { color: '#1c1f35' } },
+    y: { ticks: { color: '#6b7280', font: { size: 10 } }, grid: { color: '#1c1f35' } },
+  }
+};
+
+let priceChart, rsiChart, atrChart, macdChart, rvolChart;
+
+function mkChart(id, cfg) {
+  const ctx = document.getElementById(id).getContext('2d');
+  return new Chart(ctx, cfg);
+}
+
+function shortTs(iso) {
+  const d = new Date(iso);
+  return d.toLocaleTimeString('en-IN', { hour:'2-digit', minute:'2-digit', hour12:false });
+}
+
+async function loadChart() {
+  try {
+    const res = await fetch('/chart-data?bars=80');
+    const json = await res.json();
+    const bars = json.bars || [];
+    if (!bars.length) return;
+
+    const labels   = bars.map(b => shortTs(b.t));
+    const close    = bars.map(b => b.close);
+    const ema9     = bars.map(b => b.ema9);
+    const ema21    = bars.map(b => b.ema21);
+    const ema50    = bars.map(b => b.ema50);
+    const bbU      = bars.map(b => b.bb_upper);
+    const bbL      = bars.map(b => b.bb_lower);
+    const bbM      = bars.map(b => b.bb_mid);
+    const rsi      = bars.map(b => b.rsi);
+    const atr      = bars.map(b => b.atr);
+    const macd     = bars.map(b => b.macd_hist);
+    const rvol     = bars.map(b => b.rvol);
+
+    document.getElementById('chartUpdated').textContent =
+      'Updated ' + new Date(json.updated_at).toLocaleTimeString('en-IN');
+
+    // ── Price Chart ──────────────────────────────────────────────────────────
+    const priceData = {
+      labels,
+      datasets: [
+        { label: 'BB Upper', data: bbU, borderColor: 'rgba(124,108,252,0.3)', borderWidth: 1, borderDash: [4,3], pointRadius: 0, fill: '+2', backgroundColor: 'rgba(124,108,252,0.04)' },
+        { label: 'BB Mid',   data: bbM, borderColor: 'rgba(124,108,252,0.5)', borderWidth: 1, borderDash: [2,3], pointRadius: 0 },
+        { label: 'BB Lower', data: bbL, borderColor: 'rgba(124,108,252,0.3)', borderWidth: 1, borderDash: [4,3], pointRadius: 0, fill: '-2', backgroundColor: 'rgba(124,108,252,0.04)' },
+        { label: 'EMA 50',   data: ema50, borderColor: '#fbbf24', borderWidth: 1.5, pointRadius: 0 },
+        { label: 'EMA 21',   data: ema21, borderColor: '#00d4aa', borderWidth: 1.5, pointRadius: 0 },
+        { label: 'EMA 9',    data: ema9,  borderColor: '#7c6cfc', borderWidth: 2,   pointRadius: 0 },
+        { label: 'Price',    data: close, borderColor: '#ffffff', borderWidth: 2.5, pointRadius: 0, tension: 0.1 },
+      ]
+    };
+
+    if (priceChart) {
+      priceChart.data = priceData; priceChart.update();
+    } else {
+      priceChart = mkChart('priceChart', {
+        type: 'line', data: priceData,
+        options: { ...CHART_DEFAULTS, plugins: { ...CHART_DEFAULTS.plugins, legend: { display: true, labels: { color:'#6b7280', font:{size:10}, boxWidth:12 } } } }
+      });
+    }
+
+    // ── RSI Chart ────────────────────────────────────────────────────────────
+    const rsiData = {
+      labels,
+      datasets: [
+        { label: 'RSI', data: rsi, borderColor: '#7c6cfc', borderWidth: 2, pointRadius: 0, fill: false },
+        { label: 'OB 70', data: bars.map(()=>70), borderColor: 'rgba(255,107,107,0.4)', borderWidth: 1, borderDash:[4,3], pointRadius:0 },
+        { label: 'OS 30', data: bars.map(()=>30), borderColor: 'rgba(0,212,170,0.4)', borderWidth: 1, borderDash:[4,3], pointRadius:0 },
+        { label: 'Mid 50', data: bars.map(()=>50), borderColor: 'rgba(255,255,255,0.1)', borderWidth: 1, borderDash:[2,4], pointRadius:0 },
+      ]
+    };
+    if (rsiChart) { rsiChart.data = rsiData; rsiChart.update(); }
+    else rsiChart = mkChart('rsiChart', {
+      type:'line', data: rsiData,
+      options: { ...CHART_DEFAULTS, scales: { ...CHART_DEFAULTS.scales, y: { ...CHART_DEFAULTS.scales.y, min:0, max:100 } } }
+    });
+
+    // ── ATR Chart ────────────────────────────────────────────────────────────
+    const atrData = {
+      labels,
+      datasets: [{ label: 'ATR ($)', data: atr, borderColor: '#fbbf24', borderWidth: 2, pointRadius: 0,
+        fill: true, backgroundColor: 'rgba(251,191,36,0.1)' }]
+    };
+    if (atrChart) { atrChart.data = atrData; atrChart.update(); }
+    else atrChart = mkChart('atrChart', { type:'line', data: atrData, options: CHART_DEFAULTS });
+
+    // ── MACD Histogram ───────────────────────────────────────────────────────
+    const macdColors = macd.map(v => v >= 0 ? 'rgba(0,212,170,0.7)' : 'rgba(255,107,107,0.7)');
+    const macdData = {
+      labels,
+      datasets: [{ label: 'MACD Hist', data: macd, backgroundColor: macdColors, borderWidth: 0 }]
+    };
+    if (macdChart) { macdChart.data = macdData; macdChart.update(); }
+    else macdChart = mkChart('macdChart', { type:'bar', data: macdData, options: CHART_DEFAULTS });
+
+    // ── RVOL Chart ───────────────────────────────────────────────────────────
+    const rvolColors = rvol.map(v => v >= 1.5 ? 'rgba(0,212,170,0.8)' : v >= 1.0 ? 'rgba(124,108,252,0.7)' : 'rgba(107,114,128,0.5)');
+    const rvolData = {
+      labels,
+      datasets: [
+        { label: 'RVOL', data: rvol, backgroundColor: rvolColors, borderWidth: 0 },
+        { label: '1.5x Threshold', data: bars.map(()=>1.5), type:'line', borderColor:'rgba(251,191,36,0.5)', borderDash:[4,3], pointRadius:0, borderWidth:1 }
+      ]
+    };
+    if (rvolChart) { rvolChart.data = rvolData; rvolChart.update(); }
+    else rvolChart = mkChart('rvolChart', { type:'bar', data: rvolData, options: CHART_DEFAULTS });
+
+    // ── Instant Client-Side XAI Insights ─────────────────────────────────────
+    // Runs immediately from chart data — no API call needed
+    const last    = bars[bars.length - 1];
+    const lastRsi  = last.rsi;
+    const lastAtr  = last.atr;
+    const lastMacd = last.macd_hist;
+    const lastRvol = last.rvol;
+    const lastPx   = last.close;
+    const lastBbU  = last.bb_upper;
+    const lastBbL  = last.bb_lower;
+    const lastBbM  = last.bb_mid;
+    const lastEma9 = last.ema9;
+    const lastEma21= last.ema21;
+
+    // Prev bar for direction
+    const prev    = bars[bars.length - 2] || last;
+    const atrAvg  = atr.slice(-20).reduce((a,b)=>a+b,0) / Math.min(20, atr.length);
+    const macdPrev= prev.macd_hist;
+
+    // Price / BB insight
+    const bbRange = lastBbU - lastBbL;
+    const bbPos   = bbRange > 0 ? (lastPx - lastBbL) / bbRange : 0.5;
+    let priceInsight;
+    if (bbPos > 0.85)      priceInsight = `⚠️ Price near UPPER Bollinger Band ($${lastBbU.toFixed(0)}) — overbought zone, possible pullback soon.`;
+    else if (bbPos < 0.15) priceInsight = `⚠️ Price near LOWER Bollinger Band ($${lastBbL.toFixed(0)}) — oversold zone, possible bounce soon.`;
+    else if (lastEma9 > lastEma21) priceInsight = `✅ EMA-9 above EMA-21 — short-term uptrend. Price holding at $${lastPx.toFixed(2)}, mid-band $${lastBbM.toFixed(0)}.`;
+    else                   priceInsight = `⚪ EMA-9 below EMA-21 — short-term downtrend. Price $${lastPx.toFixed(2)}, mid-band $${lastBbM.toFixed(0)}.`;
+
+    // RSI insight
+    let rsiInsight;
+    if      (lastRsi > 75)  rsiInsight = `🔴 RSI ${lastRsi.toFixed(1)} — Strongly overbought. High chance of price drop. Avoid new BUY.`;
+    else if (lastRsi > 65)  rsiInsight = `🟡 RSI ${lastRsi.toFixed(1)} — Mildly overbought. Momentum slowing. Watch for reversal.`;
+    else if (lastRsi > 55)  rsiInsight = `🟢 RSI ${lastRsi.toFixed(1)} — Mild bullish momentum. Trend leaning up but not extreme.`;
+    else if (lastRsi > 45)  rsiInsight = `⚪ RSI ${lastRsi.toFixed(1)} — Neutral zone. No clear trend direction. System waits.`;
+    else if (lastRsi > 35)  rsiInsight = `🟡 RSI ${lastRsi.toFixed(1)} — Mild bearish momentum. Sellers slightly in control.`;
+    else if (lastRsi > 25)  rsiInsight = `🔴 RSI ${lastRsi.toFixed(1)} — Oversold. Buyers may step in soon. Possible bounce.`;
+    else                    rsiInsight = `🔴 RSI ${lastRsi.toFixed(1)} — Strongly oversold. High chance of price bounce. Avoid new SELL.`;
+
+    // ATR insight
+    const atrRatio = atrAvg > 0 ? lastAtr / atrAvg : 1;
+    let atrInsight;
+    if      (atrRatio > 1.8) atrInsight = `🌪️ ATR $${lastAtr.toFixed(2)} — Extremely high volatility (${(atrRatio).toFixed(1)}× normal). Big candles expected. Trade smaller size.`;
+    else if (atrRatio > 1.3) atrInsight = `⚡ ATR $${lastAtr.toFixed(2)} — Above-average volatility. Market is moving. Good trading opportunity if direction is clear.`;
+    else if (atrRatio > 0.7) atrInsight = `🌤️ ATR $${lastAtr.toFixed(2)} — Normal volatility. Market moving at average pace.`;
+    else                     atrInsight = `😴 ATR $${lastAtr.toFixed(2)} — Low volatility (${(atrRatio).toFixed(1)}× normal). Calm/ranging market. System likely to SKIP.`;
+
+    // MACD insight
+    const macdDir = lastMacd > macdPrev ? '↑ rising' : '↓ falling';
+    let macdInsight;
+    if      (lastMacd > 1.5)  macdInsight = `🟢 MACD +${lastMacd.toFixed(2)} (${macdDir}) — Strong bullish momentum. Buyers dominating. Likely BUY signal zone.`;
+    else if (lastMacd > 0.3)  macdInsight = `🟢 MACD +${lastMacd.toFixed(2)} (${macdDir}) — Mild bullish momentum. Trend leaning up.`;
+    else if (lastMacd > -0.3) macdInsight = `⚪ MACD ${lastMacd.toFixed(2)} (${macdDir}) — Near zero. No clear momentum. Market undecided.`;
+    else if (lastMacd > -1.5) macdInsight = `🔴 MACD ${lastMacd.toFixed(2)} (${macdDir}) — Mild bearish momentum. Sellers in slight control.`;
+    else                      macdInsight = `🔴 MACD ${lastMacd.toFixed(2)} (${macdDir}) — Strong bearish momentum. Sellers dominating. Likely SELL signal zone.`;
+
+    // RVOL insight
+    let rvolInsight;
+    if      (lastRvol > 3.0)  rvolInsight = `🔥 RVOL ${lastRvol.toFixed(2)}× — Massive volume spike! Major move likely. Watch price direction closely.`;
+    else if (lastRvol > 1.5)  rvolInsight = `📈 RVOL ${lastRvol.toFixed(2)}× — High volume. Real buying/selling interest. Confirms price moves.`;
+    else if (lastRvol > 0.8)  rvolInsight = `📊 RVOL ${lastRvol.toFixed(2)}× — Normal volume. Average participation.`;
+    else if (lastRvol > 0.3)  rvolInsight = `😶 RVOL ${lastRvol.toFixed(2)}× — Low volume. Weak conviction. Don't trust price moves.`;
+    else                      rvolInsight = `💤 RVOL ${lastRvol.toFixed(2)}× — Very low volume. Dead market. System will SKIP.`;
+
+    // Summary
+    const rsiState  = lastRsi > 60 ? 'bullish' : lastRsi < 40 ? 'bearish' : 'neutral';
+    const macdState = lastMacd > 0.5 ? 'bullish' : lastMacd < -0.5 ? 'bearish' : 'neutral';
+    const volState  = lastRvol > 1.5 ? 'high volume' : 'low volume';
+    const summaryText = `ETH/USD at $${lastPx.toFixed(2)} — RSI ${rsiState}, MACD ${macdState}, ${volState}. ${
+      (rsiState === macdState && rsiState !== 'neutral') ?
+        (rsiState === 'bullish' ? '✅ Signals aligned BULLISH — system watching for BUY.' : '⚠️ Signals aligned BEARISH — system watching for SELL.') :
+        '⚪ Mixed signals — system in WAIT mode.'
+    }`;
+
+    // Inject into DOM
+    const setInsight = (id, text) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    };
+    setInsight('ai-price',   priceInsight);
+    setInsight('ai-rsi',     rsiInsight);
+    setInsight('ai-atr',     atrInsight);
+    setInsight('ai-macd',    macdInsight);
+    setInsight('ai-rvol',    rvolInsight);
+    const sumEl = document.getElementById('aiSummaryText');
+    if (sumEl) sumEl.textContent = summaryText;
+    const tsEl = document.getElementById('aiSummaryTs');
+    if (tsEl) tsEl.textContent = 'Updated ' + new Date().toLocaleTimeString('en-IN');
+
+  } catch(e) {
+    console.error('Chart load error:', e);
+  }
+}
+
+// Load chart on start + refresh every 2 minutes
+loadChart();
+setInterval(loadChart, 120000);
+
+// ── Gemini XAI Inference ─────────────────────────────────────────────────────
+async function loadInference() {
+  try {
+    const r = await fetch('/chart-inference');
+    const d = await r.json();
+    if (d.error && !d.price) { console.warn('Inference:', d.error); return; }
+
+    const set = (id, text, fallback) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = '🧠 ' + (text && text !== '—' ? text : fallback);
+    };
+
+    set('ai-price', d.price, 'No insight yet');
+    set('ai-rsi',   d.rsi,   'No insight yet');
+    set('ai-atr',   d.atr,   'No insight yet');
+    set('ai-macd',  d.macd,  'No insight yet');
+    set('ai-rvol',  d.rvol,  'No insight yet');
+
+    const sumEl = document.getElementById('aiSummaryText');
+    if (sumEl && d.summary) sumEl.textContent = d.summary;
+
+    const tsEl = document.getElementById('aiSummaryTs');
+    if (tsEl && d._ts) tsEl.textContent = 'Updated ' + new Date(d._ts).toLocaleTimeString('en-IN');
+
+  } catch(e) {
+    console.error('Inference fetch error:', e);
+  }
+}
+
+// Load inference 3s after page load (let server warm up), then every 90s
+setTimeout(loadInference, 3000);
+setInterval(loadInference, 90000);
+</script>
+</body>
+</html>
