@@ -171,6 +171,10 @@ async def trading_loop():
             price = indicators["close"]
             logger.info(f"[LiveLoop] ETH/USD = ${price:.2f} | RSI={indicators['rsi']:.1f} | RVOL={indicators['rvol']:.2f}")
 
+            # ── 1.5. Monitor open positions (check stops/targets) ────────────
+            if _execution_engine and _execution_engine.open_positions:
+                await _execution_engine._check_all_positions()
+
             # ── 2. Classify regime ────────────────────────────────────────────
             regime_str, regime_score = classify_regime(indicators, {})
             from core.data.regime_detector import REGIME_POLICY_MAP

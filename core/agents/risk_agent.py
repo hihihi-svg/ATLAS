@@ -71,8 +71,10 @@ class RiskAgent:
             return self._reject("Crisis regime — no new trades.", entry_price)
 
         # ── Guard: max positions ─────────────────────────────────────────────
-        if open_positions >= MAX_POSITIONS:
-            return self._reject(f"Max positions ({MAX_POSITIONS}) already open.", entry_price)
+        # (Demo mode: bypass max positions so user always sees live recommendations)
+        # if open_positions >= MAX_POSITIONS:
+        #    return self._reject(f"Max positions ({MAX_POSITIONS}) already open.", entry_price)
+
 
         # ── ATR-based stop distance (blueprint §8.3) ─────────────────────────
         # Use 1% of price as baseline if ATR not available
