@@ -639,9 +639,9 @@ function updateActionPanel(s, lastSig, positions, price) {
       <div>🟢 <b>Entry:</b> $${p.entry.toFixed(2)} → <b>Now:</b> $${p.current.toFixed(2)} → <b style="color:${pnlColor}">P&L: ${pnlSign}$${p.unrealized.toFixed(2)}</b></div>
       <div>🛑 <b>Stop Loss:</b> $${p.stop.toFixed(2)} (auto-exits if price drops here) · <b>Target:</b> $${p.target_1.toFixed(2)}</div>
       <div>⏰ Held for <b>${p.hours_held.toFixed(1)} hours</b> (auto-closes after 4h if no target hit)</div>
-      <div style="margin-top:8px;color:var(--accent)">
-        <b>What to do:</b> Nothing! The system manages this trade automatically. It will close at the stop loss, target price, or after 4 hours.
-        ${p.unrealized >= 0 ? '✅ Trade is profitable — system may move stop to break-even soon.' : '⚠️ Trade is in a small loss — stop loss protects you from large losses.'}
+      <div style="margin-top:8px;color:var(--accent);font-size:16px;">
+        <b>What should you do right now:</b> <span style="color:var(--yellow)">HOLD POSITION.</span> 
+        Maintain your stop loss at $${p.stop.toFixed(2)}. ${p.unrealized >= 0 ? 'You are currently in profit.' : 'You are currently facing a small drawdown.'}
       </div>`;
     tradeEl.style.display = 'none';
     return;
@@ -656,8 +656,11 @@ function updateActionPanel(s, lastSig, positions, price) {
       <div style="font-size:16px;font-weight:700;color:${dir==='LONG'?'var(--green)':'var(--red)'}">
         ${dirText} — AI Accuracy Score ${conf.toFixed(1)}/10
       </div>
-      <div style="margin-top:6px">The system just opened a paper trade automatically. Regime: <b>${regime}</b>. Strategy: <b>${lastSig.strategy||'—'}</b>.</div>
-      <div style="margin-top:4px;color:var(--accent)"><b>If this were real:</b> Buy ~${qty} ETH (~${sizeUsd} of $10,000 capital). Set stop loss and take profit as shown below.</div>`;
+      <div style="margin-top:6px">Current Market Regime: <b>${regime.toUpperCase()}</b> | Strategy: <b>${lastSig.strategy||'—'}</b>.</div>
+      <div style="margin-top:8px;color:var(--accent);font-size:16px;">
+        <b>What should you do right now:</b> <span style="color:${dir==='LONG'?'var(--green)':'var(--red)'}">${dir === 'LONG' ? 'BUY' : 'SELL'} ~${qty} ETH</span> 
+        (Allocate ~${sizeUsd} of your capital). Set your stop loss and take profit precisely as shown below.
+      </div>`;
     tradeEl.style.display = 'block';
     document.getElementById('actDirection').innerHTML = `<span style="color:${dir==='LONG'?'var(--green)':'var(--red)'}">` + (dir==='LONG'?'BUY':'SELL') + '</span>';
     document.getElementById('actSize').textContent = sizeUsd.split(' ')[0];
@@ -669,8 +672,11 @@ function updateActionPanel(s, lastSig, positions, price) {
     contentEl.innerHTML = `
       <div style="font-size:15px;font-weight:700;color:var(--yellow)">⏸️ WAIT — No Trade Right Now (Accuracy Score: ${conf.toFixed(1)}/10)</div>
       <div style="margin-top:6px">AI agents aren't confident enough. Need ≥5.0/10 to trade. Current regime: <b>${regime}</b>.</div>
-      <div style="margin-top:4px;color:var(--muted)"><b>Reason:</b> ${lastSig.reasoning || 'Mixed signals — indicators not aligned. System waiting for clearer setup.'}</div>
-      <div style="margin-top:8px;color:var(--accent)"><b>What to do:</b> Nothing. Just wait. The system checks every 30 seconds and will trade when conditions improve. Don't force trades in uncertain markets.</div>`;
+      <div style="margin-top:4px;color:var(--muted)"><b>AI Reasoning:</b> ${lastSig.reasoning || 'Mixed signals — indicators not aligned.'}</div>
+      <div style="margin-top:8px;color:var(--accent);font-size:16px;">
+        <b>What should you do right now:</b> <span style="color:var(--yellow)">DO NOTHING (WAIT).</span> 
+        Keep your capital safe. Do not force trades in uncertain markets. We will alert you when a high-accuracy setup appears.
+      </div>`;
     tradeEl.style.display = 'none';
   }
 }
