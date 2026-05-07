@@ -111,7 +111,7 @@ class ContrarianAgent:
         dist_from_vwap = abs(close - vwap) / vwap * 100 if vwap else 0
         dist_from_bb_u = (bb_u - close) / close * 100 if bb_u else 0
 
-        return f"""The Technician just voted {tech_vote} on ETH/USD. Challenge this decision.
+        return f"""The Technician just voted {tech_vote} on ETH/USD. Your job is to catch REAL risks — not to reject the trade by default.
 
 Current data:
 - Price: ${close:.2f} | Regime: {regime.upper()}
@@ -119,7 +119,9 @@ Current data:
 - EMA9: ${ema9:.2f} | EMA21: ${ema21:.2f} | {'aligned' if ema9>ema21 else 'CROSSED BEARISH'}
 - Distance from VWAP: {dist_from_vwap:.2f}% ({'far' if dist_from_vwap>1.5 else 'close'})
 - Distance to BB Upper: {dist_from_bb_u:.2f}% ({'near resistance' if dist_from_bb_u<1 else 'room to move'})
-- RVOL: {rvol:.2f}x ({'volume confirmed' if rvol>1.3 else 'LOW VOLUME - no conviction'})
+- RVOL: {rvol:.2f}x ({'volume confirmed' if rvol>1.3 else 'below average'})
 - ATR: ${atr:.2f}
 
-Find EVERY reason NOT to take this trade. Be thorough and critical. Output as JSON."""
+Flag only concerns that are clearly supported by the data above.
+If the setup looks reasonable, vote PASS with minimal concerns.
+Do NOT invent concerns — only flag what the numbers actually show. Output as JSON."""

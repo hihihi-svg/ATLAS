@@ -72,15 +72,29 @@ def fetch_and_apply_vix() -> float:
 def fetch_market_data() -> dict | None:
     """Fetch latest ETH/USD OHLCV + compute indicators. Returns indicator dict or None."""
     try:
-        df = yf.download("ETH-USD", period="5d", interval="15m",
-                         auto_adjust=True, progress=False)
-        df = df.rename(columns={"Open": "open", "High": "high",
-                                 "Low": "low", "Close": "close", "Volume": "volume"})
-        df.dropna(inplace=True)
+        # yfinance 1.3.0: shorter periods work more reliably
+        df = None
+        for period in ["2d", "1d"]:
+            df = yf.download("ETH-USD", period=period, interval="15m",
+                             auto_adjust=True, progress=False)
+            if not df.empty:
+                break
 
-        # Flatten MultiIndex if present
+        if df is None or df.empty:
+            logger.warning("[LiveLoop] yfinance returned empty DataFrame for ETH-USD.")
+            return None
+
+        # Step 1: Flatten MultiIndex FIRST (yfinance 1.3.0 returns (Field, Ticker) tuples)
         if isinstance(df.columns, pd.MultiIndex):
-            df.columns = [c[0] for c in df.columns]
+            df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+
+        # Step 2: Standardize to lowercase
+        df.columns = [c.lower() if isinstance(c, str) else str(c).lower() for c in df.columns]
+
+        df.dropna(subset=["close", "high", "low", "volume"], inplace=True)
+
+        if df.empty:
+            return None
 
         close = df["close"].squeeze()
         high  = df["high"].squeeze()
@@ -103,7 +117,9 @@ def fetch_market_data() -> dict | None:
 
         df["vwap"] = (df["close"] * df["volume"]).cumsum() / df["volume"].cumsum()
         avg_vol = vol.rolling(20).mean()
-        df["rvol"] = vol / avg_vol.where(avg_vol > 0, 1)
+        # Safe RVOL: fillna(1.0) prevents NaN/0 from triggering false contrarian kills
+        rvol_series = (vol / avg_vol.where(avg_vol > 0, 1)).fillna(1.0)
+        df["rvol"] = rvol_series
 
         df.dropna(inplace=True)
 
@@ -209,18 +225,30 @@ async def trading_loop():
             logger.info(f"[LiveLoop] Running agent pipeline... (open positions: {open_count})")
 
             # Dynamic RL confidence based on market conditions
-            rsi_val = indicators.get('rsi', 50)
+            rsi_val  = indicators.get('rsi', 50)
             rvol_val = indicators.get('rvol', 1.0)
-            regime_bonus = {'bull': 1.0, 'bear': -0.5, 'chop': 0.0, 'volatile': -0.3, 'crisis': -1.5}
+            direction_hint = "SHORT" if regime_str == "bear" else "LONG"
+
+            # Regime bonus/penalty — BEAR is a valid regime for shorts, not penalised as hard as chop
+            regime_bonus = {'bull': 1.0, 'bear': 0.2, 'chop': -0.5, 'volatile': -0.8, 'crisis': -3.0}
             base_rl = 5.5
-            # RSI contribution: 50=neutral, 70=+1.5, 30=-1.5
-            rsi_adj = (rsi_val - 50) / 20 * 1.5
-            # Volume confirmation
-            vol_adj = min(0.5, (rvol_val - 1.0) * 0.5) if rvol_val > 1.0 else -0.3
-            # Regime fit
-            reg_adj = regime_bonus.get(regime_str, 0)
-            
-            dynamic_rl = max(1.0, min(9.5, base_rl + rsi_adj + vol_adj + reg_adj))
+
+            # RSI contribution: ideal LONG = RSI 50-70, ideal SHORT = RSI 30-50
+            if direction_hint == "SHORT":
+                rsi_adj = (50 - rsi_val) / 20 * 1.5   # SHORT benefits from falling RSI
+            else:
+                rsi_adj = (rsi_val - 50) / 20 * 1.5
+
+            # Volume confirmation — only penalise when clearly below average, not on NaN/0
+            if rvol_val > 1.0:
+                vol_adj = min(0.8, (rvol_val - 1.0) * 0.6)
+            elif rvol_val > 0.5:
+                vol_adj = -0.2
+            else:
+                vol_adj = -0.5   # Genuine low-volume penalty (but not -3.0)
+
+            reg_adj    = regime_bonus.get(regime_str, 0)
+            dynamic_rl = max(2.0, min(9.5, base_rl + rsi_adj + vol_adj + reg_adj))
 
             signal = await evaluate_trade_opportunity(
                 indicators    = indicators,
