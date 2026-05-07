@@ -41,16 +41,6 @@ def classify_regime(ind_15m: dict, ind_1d: dict) -> tuple[str, float]:
     rvol      = ind_15m.get("rvol", 1.0)
     atr       = ind_15m.get("atr", 0)
     close     = ind_15m.get("close", 1)
-    # --- DEMO JITTER (Force dashboard movement) ---
-    import time
-    cycle = (int(time.time()) // 60) % 3 
-    if cycle == 1: 
-        regime = "bull"; score = 0.85; rsi = 65; macd_hist = 0.8;
-        return regime, score
-    if cycle == 2: 
-        regime = "bear"; score = 0.78; rsi = 35; macd_hist = -0.8;
-        return regime, score
-    # -----------------------------------------------
 
     atr_pct   = (atr / close) * 100 if close > 0 else 0
 
