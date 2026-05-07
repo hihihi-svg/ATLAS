@@ -326,7 +326,7 @@ Return ONLY a single valid JSON object, no markdown, no other text. Keys require
         result["_ts"] = datetime.now(timezone.utc).isoformat()
         return result
     except Exception as e:
-        logger.error(f"[API] Hugging Face inference error: {e}")
+        logger.debug(f"[API] Hugging Face inference unavailable ({e}). Using indicator fallback.")
         # Robust fallback based on indicators
         rsi_val = r.get('rsi', 50)
         mhist = r.get('macd_hist', 0)
@@ -371,13 +371,21 @@ async def get_chart_data(bars: int = 80):
         import ta
         import pandas as pd
 
-        df = yf.download("ETH-USD", period="5d", interval="15m",
-                         auto_adjust=True, progress=False)
-        df = df.rename(columns={"Open":"open","High":"high","Low":"low",
-                                 "Close":"close","Volume":"volume"})
-        df.dropna(inplace=True)
+        df = None
+        for period in ["2d", "1d"]:
+            df = yf.download("ETH-USD", period=period, interval="15m",
+                             auto_adjust=True, progress=False)
+            if not df.empty:
+                break
+
+        if df is None or df.empty:
+            return {"bars": [], "count": 0, "error": "No data from yfinance"}
+
+        # Flatten MultiIndex FIRST, then lowercase
         if isinstance(df.columns, pd.MultiIndex):
-            df.columns = [c[0] for c in df.columns]
+            df.columns = [c[0] if isinstance(c, tuple) else c for c in df.columns]
+        df.columns = [c.lower() if isinstance(c, str) else str(c).lower() for c in df.columns]
+        df.dropna(subset=["close", "high", "low", "volume"], inplace=True)
 
         c = df["close"].squeeze()
         h = df["high"].squeeze()
