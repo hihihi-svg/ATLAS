@@ -221,9 +221,6 @@ class Backtester:
 
         # Apply regime multiplier (PDF Feature 3)
         regime_mult = REGIME_SIZE_MULT.get(regime, 1.0)
-        score *= (0.7 + 0.3 * regime_mult)
-
-        return round(score, 2), direction, strategy
         if regime_mult < 1.0:
             score *= regime_mult + (1 - regime_mult) * 0.5   # Soft penalty
 
