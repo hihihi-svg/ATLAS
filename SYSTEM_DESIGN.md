@@ -29,3 +29,24 @@ ATLAS (Autonomous Trading Logic & Advisory System) is a multi-agent crypto tradi
 - **AI Models**: GPT-4o, PPO.
 - **Frontend**: HTML5, CSS3 (Glassmorphism), JS (WebSockets). Served by `core/control/api.py`.
 - **State/Cache**: Redis + Local JSON files.
+
+## 5. User Flow
+```mermaid
+graph TD
+    A[User] -->|Opens Dashboard| B[Web UI localhost:8000]
+    B --> C[View Live Market Data]
+    B --> D[Monitor 5-Agent Consensus]
+    D --> E[Observe Executed Trades]
+    B --> F[View HERMES Daily Reports]
+```
+
+## 6. Builder Flow
+```mermaid
+graph TD
+    A[Developer] -->|Edit Logic/Weights| B[Modify Agents]
+    B --> C[Run Backtest test_day6.py]
+    C --> D{Pass Threshold?}
+    D -- Yes --> E[Deploy run_live.py]
+    D -- No --> F[Tweak Policy]
+    F --> C
+```
