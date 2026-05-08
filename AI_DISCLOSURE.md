@@ -26,6 +26,9 @@ ATLAS utilizes a **Multi-Agent Consensus Model** where specialized agents delibe
 5.  **The RL Strategist**: A Reinforcement Learning agent using a **PPO (Proximal Policy Optimization)** model trained on historical price action.
 6.  **HERMES (Hindsight Agent)**: An autonomous memory agent that audits daily performance and updates the "Strategy DNA" weights.
 
+### 🤖 Automation Framework
+- **Alibaba AgentScope (CoPaw)**: Used as the background "Agentic Workstation" for autonomous task scheduling and persistent memory management.
+
 ---
 
 ## 📈 3. Machine Learning Frameworks

@@ -36,7 +36,7 @@ graph TD
 ## 🛠️ Tech Stack
 | Layer | Technologies |
 | :--- | :--- |
-| **Brain** | GPT-4o, PPO (Reinforcement Learning), Stable-Baselines3 |
+| **Brain** | GPT-4o, PPO (Reinforcement Learning), Stable-Baselines3, Alibaba AgentScope |
 | **Backend** | Python 3.11+, FastAPI, Uvicorn, Asyncio |
 | **Data** | yfinance, CCXT (Binance/Coinbase), Pandas-TA |
 | **Frontend** | Vanilla HTML5/CSS3 (Glassmorphism), JavaScript (Real-time Polling) |

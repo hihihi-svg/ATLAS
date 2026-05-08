@@ -31,6 +31,7 @@
     *   **Tools**: OpenAI GPT-4o-mini, Mistral-7B.
     *   **Prompt**: *"Analyze these 5 technical indicators and news sentiment. Provide a trade recommendation with a confidence score and detailed reasoning."*
     *   **Output**: Structured JSON containing trade decision, agent scores, and rationale.
+    *   **Other**: Automated Telegram bot integration (Moltbot) and background agentic workflow management using the **Alibaba AgentScope (CoPaw)** framework.
     *   **Modification**: Integrated into a custom voting-weight system (Strategy DNA) that evolves over time.
 
 ### Feature 2: HERMES Hindsight Agent

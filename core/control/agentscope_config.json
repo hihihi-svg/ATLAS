@@ -1,0 +1,8 @@
+[
+    {
+        "config_name": "atlas_copaw_config",
+        "model_type": "openai_chat",
+        "model_name": "gpt-4o-mini",
+        "api_key": "PLACEHOLDER"
+    }
+]
